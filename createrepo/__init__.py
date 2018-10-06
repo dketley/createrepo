@@ -106,6 +106,7 @@ class MetaDataConfig(object):
         self.unique_md_filenames = True
         self.additional_metadata = {} # dict of 'type':'filename'
         self.revision = str(int(time.time()))
+        self.set_timestamp_to_revision = False
         self.content_tags = [] # flat list of strings (like web 2.0 tags)
         self.distro_tags = []# [(cpeid(None allowed), human-readable-string)]
         self.repo_tags = []# strings, forwhatever they are worth
@@ -490,6 +491,9 @@ class MetaDataGenerator:
         fo.write('<prestodelta>\n')
         return fo
 
+    def _set_mtime(self, filename):
+        if self.conf.set_timestamp_to_revision:
+            os.utime(filename, (int(self.conf.revision), int(self.conf.revision)))
 
     def read_in_package(self, rpmfile, pkgpath=None, reldir=None):
         """rpmfile == relative path to file from self.packge_dir"""
@@ -942,6 +946,7 @@ class MetaDataGenerator:
         else:
             self.primaryfile.write('\n</metadata>')
             self.primaryfile.close()
+            self._set_mtime(self.primaryfile.name)
 
         if not self.conf.quiet:
             self.callback.log(_('Saving file lists metadata'))
@@ -950,6 +955,7 @@ class MetaDataGenerator:
         else:
             self.flfile.write('\n</filelists>')
             self.flfile.close()
+            self._set_mtime(self.flfile.name)
 
         if not self.conf.quiet:
             self.callback.log(_('Saving other metadata'))
@@ -958,6 +964,7 @@ class MetaDataGenerator:
         else:
             self.otherfile.write('\n</otherdata>')
             self.otherfile.close()
+            self._set_mtime(self.otherfile.name)
 
         if self.conf.deltas:
             deltam_st = time.time()
@@ -966,6 +973,7 @@ class MetaDataGenerator:
             self.deltafile.write(self.generate_delta_xml())
             self.deltafile.write('\n</prestodelta>')
             self.deltafile.close()
+            self._set_mtime(self.deltafile.name)
             if self.conf.profile:
                 self.callback.log('deltam time: %0.3f' % (time.time() - deltam_st))
 
@@ -1151,7 +1159,7 @@ class MetaDataGenerator:
         fo.seek(0)
         open_csum = misc.checksum(self.conf.sumtype, fo)
         fo.close()
-
+        self._set_mtime(fo.name)
 
         if self.conf.unique_md_filenames:
             (csum, outfn) = checksum_and_rename(outfn, self.conf.sumtype)
@@ -1239,8 +1247,10 @@ class MetaDataGenerator:
             uncsum = data.hexdigest(sumtype)
             unsize = len(data)
             zfo.close()
+            self._set_mtime(complete_path)
             if dfo is not None:
                 dfo.close()
+                self._set_mtime(unpath)
 
             csum = misc.checksum(sumtype, complete_path)
             timestamp = os.stat(complete_path)[8]
@@ -1295,6 +1305,7 @@ class MetaDataGenerator:
                     # compress the files
 
                     compressFile(resultpath, result_compressed, compress_type)
+                    self._set_mtime(result_compressed)
                     # csum the compressed file
                     db_compressed_sums[ftype] = misc.checksum(sumtype,
                                                              result_compressed)

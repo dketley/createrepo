@@ -110,6 +110,10 @@ Specify keyword/tags about the content of the repository. Can be specified more 
 Specify keyword/tags about the repository itself. Can be specified more than once.
 .IP "\fB\-\-revision\fP"
 Arbitrary string for a repository revision.
+.IP "\fB\-\-set-timestamp-to-revision\fP"
+Set timestamp field in metatada to value given with \-\-revision. This require
+\-\-revision being a timestamp formated in "date +%s" format. This option also
+clamp created files modification time to the same value.
 .IP "\fB\-\-deltas\fP"
 Tells createrepo to generate deltarpms and the delta metadata
 .IP "\fB\-\-oldpackagedirs\fP PATH"
@@ -134,6 +138,18 @@ groups file should be in the same directory as the rpm packages
 .br
 .PP
 \fBcreaterepo\fP \-g comps.xml /path/to/rpms
+
+.SH "REPRODUCIBLE BUILDS"
+\fBcreaterepo\fP can produce bit-by-bit reproducible results if actual packages
+in the repository are the same and when revision and timestamps are set to
+specific value. To do that, call:
+.br
+.PP
+\fBcreaterepo\fP \-\-revision \fBXXX\fP \-\-set-timestamp-to-revision /path/to/rpms
+.br
+.PP
+Replace \fBXXX\fP with timestamp to be used. Good candidate could be
+\fBSOURCE_DATE_EPOCH\fP environment variable, if present.
 
 .SH "FILES"
 .nf
