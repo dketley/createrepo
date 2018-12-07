@@ -1160,6 +1160,7 @@ class MetaDataGenerator:
         open_csum = misc.checksum(self.conf.sumtype, fo)
         fo.close()
         self._set_mtime(fo.name)
+        self._set_mtime(outfn)
 
         if self.conf.unique_md_filenames:
             (csum, outfn) = checksum_and_rename(outfn, self.conf.sumtype)
@@ -1396,6 +1397,7 @@ class MetaDataGenerator:
             fo = open(repofilepath, 'w')
             fo.write(repomd.dump_xml())
             fo.close()
+            self._set_mtime(repofilepath)
         except (IOError, OSError, TypeError), e:
             self.callback.errorlog(
                   _('Error saving temp file for repomd.xml: %s') % repofilepath)

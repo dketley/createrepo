@@ -117,7 +117,7 @@ def parse_args(args, conf):
         action="append", help="tags to describe the repository itself")
     parser.add_option("--revision", default=None,
         help="user-specified revision for this repository")
-    parser.add_option("--set-timestamp-to-revision", default=None, type='int',
+    parser.add_option("--set-timestamp-to-revision", default=False, action="store_true",
         help="set timestamps in metadata and mtime of files to --revision value (date +%s format)")
     parser.add_option("--deltas", default=False, action="store_true",
         help="create delta rpms and metadata")
